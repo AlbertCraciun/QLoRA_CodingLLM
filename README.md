@@ -1,161 +1,192 @@
-## Fine-Tuning DeepSeek-R1 with QLoRA
+## QLoRA_CodingLLM
 
-This project enables fine-tuning the **DeepSeek-R1** model using **QLoRA**
-to optimize code generation performance.
-It supports datasets from BigCode (GitHub repos), Azure private repositories,
-and The Stack (Hugging Face).
+This project demonstrates how to fine-tune the **DeepSeek-R1** model using **QLoRA** for code generation.
+It supports datasets from BigCode (GitHub), Azure DevOps, and The Stack (Hugging Face), along with a complete flow for training, evaluation, and deployment with FastAPI.
 
-## **Project Structure**
+---
+
+### **Key Features**
+- **Fine-tune DeepSeek-R1** on a custom dataset (GitHub, Azure, The Stack)
+- **Uses QLoRA (4-bit quantization)** to reduce memory requirements
+- **Extract and process code** from GitHub, Azure DevOps, and Hugging Face
+- **Full deployment** with FastAPI (containerized)
+- **Automation** with a single `docker-compose up --build`
+
+---
+
+### **Project Structure**
 ```
 .
-│── docker-compose.yml       # Docker setup for cloud/local deployment
-│── setup.sh                 # Automated setup script for dependencies
-│── requirements.txt         # List of Python dependencies
-│── config.yaml              # Config file for easy customization
-│── .env                     # Environment variables for Azure & secrets (ignored)
-│── data/                    # Folder to store downloaded code repos
-│── models/                  # Folder to save trained models
+│── docker-compose.yml       # Config for running in Docker containers
+│── setup.sh                 # Dependency installation script (for local run)
+│── requirements.txt         # Python libraries list
+│── config.yaml              # Configuration file (model, dataset, parameters)
+│── .env                     # Environment variables (Azure, tokens); ignored by commit
+│── data/                    # Folder for code downloaded from GitHub/Azure
+│── models/                  # Folder for fine-tuned models
 │── src/
-│   │── train.py             # Fine-tuning script for DeepSeek-R1
-│   │── dataset_prep.py      # Script to prepare and clean dataset
-│   │── evaluate.py          # Script to test trained model
-│   │── deploy.py            # FastAPI deployment script
-│   │── utils.py             # Helper functions (GitHub/Azure repo extraction)
-│── README.md                # Documentation on how to run everything
+│   │── dataset_prep.py      # Script for dataset preparation (GitHub + The Stack)
+│   │── train.py             # QLoRA fine-tuning for DeepSeek-R1
+│   │── evaluate.py          # Script for evaluating the trained model
+│   │── deploy.py            # Deployment with FastAPI
+│   │── utils.py             # Utility functions (GitHub, Azure clone)
+│── README.md                # Project documentation
 ```
 
-## **Features**
-- **Fine-tune DeepSeek-R1 on your dataset**
-- **Uses QLoRA (4-bit quantization) for efficient training**
-- **Supports extracting code from GitHub, Azure DevOps, and Hugging Face**
-- **Deploys the trained model using FastAPI**
-- **Fully containerized (Docker + GPU acceleration)**
-- **Supports one-click execution for full automation**
+---
 
-## **Installation & Setup**
-### **1. Clone the Repository**
+### **Installation & Setup**
+
+#### **1. Clone this repository**
 ```bash
 git clone https://github.com/your-repo/QLoRA_CodingLLM.git
 cd QLoRA_CodingLLM
 ```
 
-### **2. Install Dependencies (Local)**
+#### **2. (Optional) Local Run (Without Docker)**
+If you prefer to run locally, **without containers**, you can use the `setup.sh` script which:
+- Installs Python dependencies
+- Creates and activates a `venv` virtual environment
+
 ```bash
 chmod +x setup.sh
 ./setup.sh
-```
 
-### **3. Configure `.env` File (For Azure)**
-Create a **`.env`** file to store **Azure credentials**.
+# Activate the virtual environment
+source venv/bin/activate
+```
+> **Note**: In this mode, you will run scripts with `python src/dataset_prep.py`, `python src/train.py`, etc.
+
+#### **3. Configure `.env` (For Azure)**
+If you want to download code from Azure DevOps, create an **`.env`** file with your access data:
 ```ini
 AZURE_PAT=your_personal_access_token
 ```
+In `config.yaml` you can enable/disable downloading from Azure via `azure_repos: true/false`.
 
-## **One-Click Execution**
-To run everything (dataset preparation, training, evaluation, and deployment)
-**with a single command**:
+---
+
+### **One-Click Execution (Docker)**
+To run the entire workflow (dataset preparation, training, evaluation, FastAPI deployment) with a single command:
+
 ```bash
 docker-compose up --build
 ```
-This command will:
-1. **Prepare the dataset** by downloading and formatting repositories.
-2. **Train DeepSeek-R1** using QLoRA.
-3. **Evaluate the trained model**.
-4. **Deploy the model using FastAPI**.
 
-If no errors occur, the model will be **fully fine-tuned and deployed** when you return.
+- **`qlora-training`** will prepare the data (if not already prepared), then train the model with QLoRA.
+- **`qlora-api`** will start after the model is trained, launching a FastAPI server at `http://localhost:8000`.
 
-## **Running Options: Local vs Cloud**
-### **Run Locally (Manual Execution)**
+If you only want to run the training:
 ```bash
-chmod +x setup.sh
-./setup.sh
-python src/dataset_prep.py
-python src/train.py
-python src/evaluate.py
-uvicorn src.deploy:app --reload --host 0.0.0.0 --port 8000
+docker-compose up --build qlora-training
 ```
 
-### **Run in a Cloud Environment (Docker)**
+If you only want the API (assuming the model is already trained and saved in `models/qlora_output`):
 ```bash
-docker run --rm --gpus all nvidia/cuda:11.8.0-base nvidia-smi
-docker-compose up --build
-docker-compose up qlora-training
-docker-compose up qlora-api
+docker-compose up --build qlora-api
 ```
 
-## **Adapting to Other Models**
-This project can be modified to fine-tune **any LLM** instead of **DeepSeek-R1**.
+---
 
-### **Where to Change the Model?**
+### **Optional Run: GPU Check**
+To check if the GPU is available in the container, you can use:
+```bash
+docker run --rm --gpus all nvidia/cuda:12.2.0-devel-ubuntu22.04 nvidia-smi
+```
+If you have the drivers and `nvidia-docker2` installed, you’ll see GPU details.
+
+---
+
+### **Manual Local Run**
+If you do not want to use containers:
+1. Install dependencies with `setup.sh`.
+2. Run them in sequence:
+   ```bash
+   # 1) Prepare the dataset
+   python src/dataset_prep.py
+
+   # 2) Train the model with QLoRA
+   python src/train.py
+
+   # 3) Evaluate the model
+   python src/evaluate.py
+
+   # 4) Deploy with FastAPI on port 8000
+   uvicorn src.deploy:app --reload --host 0.0.0.0 --port 8000
+   ```
+---
+
+### **Customizing for Other Models**
+This project can be adapted to any LLM instead of **DeepSeek-R1**.
+
 1. **`config.yaml`**
-```yaml
-model_name: "huggingface-model-name-here"
-```
+   ```yaml
+   model_name: "huggingface-model-name-here"
+   ```
 2. **`src/train.py`**
-```python
-model = AutoModelForCausalLM.from_pretrained(
-    config["model_name"],
-    torch_dtype=torch.float16,
-    load_in_4bit=True,
-    trust_remote_code=True
-)
-```
+   ```python
+   model = AutoModelForCausalLM.from_pretrained(
+       config["model_name"],
+       torch_dtype=torch.float16,
+       load_in_4bit=True,
+       trust_remote_code=True
+   )
+   ```
 3. **`src/evaluate.py`**
-```python
-model_path = "models/your-model-name"
-tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
-```
+   ```python
+   model_path = "models/your-model-name"
+   tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+   model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
+   ```
 4. **`src/deploy.py`**
-```python
-pipe = pipeline("text-generation", model="models/your-model-name")
-```
-### **Compatible Models**
+   ```python
+   pipe = pipeline("text-generation", model="models/your-model-name")
+   ```
+
+#### **Compatible Models**
 - **Meta LLaMA 2**
 - **Code LLaMA**
 - **Mistral-7B**
 - **StarCoder**
-- **GPT-J/GPT-NeoX**
+- **GPT-J / GPT-NeoX**
+etc.
 
-## **Configuration File (`config.yaml`)**
-Modify **`config.yaml`** to customize model training:
-```yaml
-model_name: "deepseek-ai/DeepSeek-R1"
-dataset_path: "bigcode/the-stack-smol"
-epochs: 3
-batch_size: 2
-learning_rate: 0.0002
-gradient_accumulation_steps: 4
-azure_organization: "your-azure-org"
-azure_project: "your-azure-project"
-```
+### **FAQ**
+1. **Can I run it on a local RTX 4090?**
+   Yes, QLoRA is perfect for 24GB VRAM. Performance is higher on A100/H100, but 4090 is sufficient.
 
-## **FAQ**
-### **Can I run this on a local GPU (RTX 4090)?**
-Yes! **QLoRA allows fine-tuning on 24GB VRAM GPUs.**
-For best performance, use **A100 / H100 / RTX 4090**.
+2. **What datasets can I use?**
+   - The Stack (Hugging Face)
+   - GitHub Repos (BigCode)
+   - Private Azure DevOps Repos
 
-### **What datasets does this support?**
-- **The Stack** (Hugging Face)
-- **GitHub repos (BigCode)**
-- **Azure DevOps private repos**
+3. **How do I deploy to production?**
+   - Use Docker and FastAPI
+   - You can move the Docker image to AWS, GCP, RunPod, etc.
+   - You can upload the fine-tuned model to Hugging Face with:
+     ```python
+     model.push_to_hub("my-fine-tuned-deepseek")
+     ```
 
-### **How do I deploy the model in production?**
-- Use **Docker** and host via **FastAPI**
-- Deploy on **AWS, GCP, or RunPod**
-- Convert model to **HF Hub** using:
-```python
-model.push_to_hub("my-fine-tuned-deepseek")
-```
+4. **Why can’t I see local code in the dataset?**
+   In `src/dataset_prep.py`, local files are transformed into a `Dataset` and concatenated with `train`. Check the logs to ensure that files are being read correctly.
 
-## **Resources**
+---
+
+### **Useful Resources**
 - [Hugging Face: The Stack](https://huggingface.co/datasets/bigcode/the-stack)
 - [DeepSeek AI](https://huggingface.co/deepseek-ai)
 - [Hugging Face: Fine-Tuning Guide](https://huggingface.co/docs/transformers/training)
-- [QLoRA Paper](https://arxiv.org/abs/2305.14314)
-- [Fine-Tuning Large LLMs](https://huggingface.co/learn/cookbook/fine_tuning_code_llm_on_single_gpu)
+- [QLoRA Paper (arXiv)](https://arxiv.org/abs/2305.14314)
+- [Finetuning Code LLM (Hugging Face Cookbook)](https://huggingface.co/learn/cookbook/fine_tuning_code_llm_on_single_gpu)
 - [Code LLaMA](https://huggingface.co/codellama)
 
+<<<<<<< HEAD
 ## **Contributors**
 - [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Developer
+=======
+---
+
+### **Contributors**
+- [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Developer
+>>>>>>> developer

@@ -1,0 +1,39 @@
+# ===========================
+# General Configuration
+# ===========================
+model_name: "deepseek-ai/DeepSeek-R1"
+dataset_path: "bigcode/the-stack-v2"
+output_dir: "models/qlora_output"
+
+# ===========================
+# Training Parameters
+# ===========================
+epochs: 3
+batch_size: 2
+learning_rate: 0.0002
+gradient_accumulation_steps: 4
+
+# ===========================
+# QLoRA Parameters
+# ===========================
+lora_r: 64
+lora_alpha: 16
+lora_dropout: 0.1
+lora_target_modules:
+  - "q_proj"
+  - "v_proj"
+lora_bias: "none"
+
+# ===========================
+# GitHub Repositories (BigCode)
+# ===========================
+github_repos: true
+github_api_url: "https://api.github.com/orgs/bigcode-project/repos"
+
+# ===========================
+# Azure DevOps Configuration
+# ===========================
+azure_repos: true # Enable or disable Azure repo download
+azure_organization: "your-azure-org" # Replace with your Azure DevOps organization
+azure_project: "your-azure-project" # Replace with your Azure DevOps project
+azure_api_version: "6.0" # API version for Azure DevOps

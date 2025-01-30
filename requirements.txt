@@ -1,0 +1,14 @@
+torch
+transformers
+datasets
+peft
+bitsandbytes
+accelerate
+trl
+wandb
+fastapi
+uvicorn
+gitpython
+python-dotenv
+pyyaml
+requests
