@@ -11,7 +11,12 @@ services:
     volumes:
       - .:/workspace
     working_dir: /workspace
-    command: bash -c "source venv/bin/activate && python src/train.py"
+    command: >
+      bash -c "apt-get update &&
+               apt-get install -y python3 python3-pip git &&
+               pip3 install --upgrade pip &&
+               pip3 install -r requirements.txt &&
+               python3 src/train.py"
     deploy:
       resources:
         reservations:
@@ -21,17 +26,22 @@ services:
               capabilities: [gpu]
 
   qlora-api:
-    image: python:3.10
+    image: nvidia/cuda:12.2.0-devel-ubuntu22.04
     container_name: qlora_api_container
     depends_on:
       - qlora-training
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=0
     volumes:
       - .:/workspace
     working_dir: /workspace
     ports:
       - "8000:8000"
-    command: bash -c "source venv/bin/activate && uvicorn src.deploy:app --host 0.0.0.0 --port 8000"
-
-volumes:
-  qlora_data:
-  qlora_models:
+    command: >
+      bash -c "apt-get update &&
+               apt-get install -y python3 python3-pip git &&
+               pip3 install --upgrade pip &&
+               pip3 install -r requirements.txt &&
+               uvicorn src.deploy:app --host 0.0.0.0 --port 8000"

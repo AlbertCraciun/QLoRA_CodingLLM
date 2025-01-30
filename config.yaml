@@ -2,7 +2,7 @@
 # General Configuration
 # ===========================
 model_name: "deepseek-ai/DeepSeek-R1"
-dataset_path: "bigcode/the-stack-smol"
+dataset_path: "bigcode/the-stack-v2"
 output_dir: "models/qlora_output"
 
 # ===========================
