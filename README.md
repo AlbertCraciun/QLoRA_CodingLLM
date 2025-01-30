@@ -1,123 +1,123 @@
 ## QLoRA_CodingLLM
 
-Acest proiect demonstrează cum să fine-tune-uiesti modelul **DeepSeek-R1** folosind **QLoRA** pentru generarea de cod.
-Suportă dataset-uri din BigCode (GitHub), Azure DevOps și The Stack (Hugging Face), precum și un flux complet de pregătire, evaluare și deploy cu FastAPI.
+This project demonstrates how to fine-tune the **DeepSeek-R1** model using **QLoRA** for code generation.
+It supports datasets from BigCode (GitHub), Azure DevOps, and The Stack (Hugging Face), along with a complete flow for training, evaluation, and deployment with FastAPI.
 
 ---
 
-### **Caracteristici principale**
-- **Fine-tune DeepSeek-R1** pe un dataset personalizat (GitHub, Azure, The Stack)
-- **Folosește QLoRA (4-bit quantization)** pentru a reduce cerințele de memorie
-- **Extrage și prelucrează cod** din GitHub, Azure DevOps și Hugging Face
-- **Deploy complet** cu FastAPI (containerizat)
-- **Automatizare** cu un singur `docker-compose up --build`
+### **Key Features**
+- **Fine-tune DeepSeek-R1** on a custom dataset (GitHub, Azure, The Stack)
+- **Uses QLoRA (4-bit quantization)** to reduce memory requirements
+- **Extract and process code** from GitHub, Azure DevOps, and Hugging Face
+- **Full deployment** with FastAPI (containerized)
+- **Automation** with a single `docker-compose up --build`
 
 ---
 
-### **Structura proiectului**
+### **Project Structure**
 ```
 .
-│── docker-compose.yml       # Config pentru rularea în containere Docker
-│── setup.sh                 # Script de instalare dependențe (pentru rulare locală)
-│── requirements.txt         # Lista de librării Python
-│── config.yaml              # Fisier de configurare (model, dataset, parametri)
-│── .env                     # Variabile de mediu (Azure, token-uri); ignorat la commit
-│── data/                    # Folder pentru cod descărcat din GitHub/Azure
-│── models/                  # Folder pentru modelele fine-tunate
+│── docker-compose.yml       # Config for running in Docker containers
+│── setup.sh                 # Dependency installation script (for local run)
+│── requirements.txt         # Python libraries list
+│── config.yaml              # Configuration file (model, dataset, parameters)
+│── .env                     # Environment variables (Azure, tokens); ignored by commit
+│── data/                    # Folder for code downloaded from GitHub/Azure
+│── models/                  # Folder for fine-tuned models
 │── src/
-│   │── dataset_prep.py      # Script de pregătire a dataset-ului (GitHub + The Stack)
-│   │── train.py             # Fine-tuning QLoRA pentru DeepSeek-R1
-│   │── evaluate.py          # Script de evaluare a modelului antrenat
-│   │── deploy.py            # Deploy cu FastAPI
-│   │── utils.py             # Funcții utilitare (clone GitHub, Azure)
-│── README.md                # Documentația proiectului
+│   │── dataset_prep.py      # Script for dataset preparation (GitHub + The Stack)
+│   │── train.py             # QLoRA fine-tuning for DeepSeek-R1
+│   │── evaluate.py          # Script for evaluating the trained model
+│   │── deploy.py            # Deployment with FastAPI
+│   │── utils.py             # Utility functions (GitHub, Azure clone)
+│── README.md                # Project documentation
 ```
 
 ---
 
-### **Instalare & Setup**
+### **Installation & Setup**
 
-#### **1. Clonează acest repository**
+#### **1. Clone this repository**
 ```bash
 git clone https://github.com/your-repo/QLoRA_CodingLLM.git
 cd QLoRA_CodingLLM
 ```
 
-#### **2. (Opțional) Rulare locală (Fără Docker)**
-Dacă preferi să rulezi local, **fără containere**, poți utiliza scriptul `setup.sh` care:
-- Instalează dependențe Python
-- Creează și activează un mediu virtual `venv`
+#### **2. (Optional) Local Run (Without Docker)**
+If you prefer to run locally, **without containers**, you can use the `setup.sh` script which:
+- Installs Python dependencies
+- Creates and activates a `venv` virtual environment
 
 ```bash
 chmod +x setup.sh
 ./setup.sh
 
-# Activează mediul virtual
+# Activate the virtual environment
 source venv/bin/activate
 ```
-> **Notă**: În acest mod, vei rula scripturile cu `python src/dataset_prep.py`, `python src/train.py`, etc.
+> **Note**: In this mode, you will run scripts with `python src/dataset_prep.py`, `python src/train.py`, etc.
 
-#### **3. Configurare `.env` (Pentru Azure)**
-Dacă vrei să descarci cod din Azure DevOps, creează un fișier **`.env`** cu datele de acces:
+#### **3. Configure `.env` (For Azure)**
+If you want to download code from Azure DevOps, create an **`.env`** file with your access data:
 ```ini
 AZURE_PAT=your_personal_access_token
 ```
-În `config.yaml` poți activa/dezactiva descărcarea din Azure prin `azure_repos: true/false`.
+In `config.yaml` you can enable/disable downloading from Azure via `azure_repos: true/false`.
 
 ---
 
 ### **One-Click Execution (Docker)**
-Pentru a rula întregul flux (pregătire dataset, antrenare, evaluare, deploy FastAPI) dintr-o singură comandă:
+To run the entire workflow (dataset preparation, training, evaluation, FastAPI deployment) with a single command:
 
 ```bash
 docker-compose up --build
 ```
 
-- **`qlora-training`** va pregăti datele (dacă nu sunt deja pregătite), apoi va antrena modelul cu QLoRA.
-- **`qlora-api`** va porni după ce modelul e antrenat, lansând un server FastAPI la `http://localhost:8000`.
+- **`qlora-training`** will prepare the data (if not already prepared), then train the model with QLoRA.
+- **`qlora-api`** will start after the model is trained, launching a FastAPI server at `http://localhost:8000`.
 
-Dacă vrei să rulezi doar antrenarea:
+If you only want to run the training:
 ```bash
 docker-compose up --build qlora-training
 ```
 
-Dacă vrei doar API-ul (presupunând că modelul e deja antrenat și salvat în `models/qlora_output`):
+If you only want the API (assuming the model is already trained and saved in `models/qlora_output`):
 ```bash
 docker-compose up --build qlora-api
 ```
 
 ---
 
-### **Rulare opțională: GPU verificare**
-Pentru a verifica dacă GPU-ul este disponibil în container, poți folosi:
+### **Optional Run: GPU Check**
+To check if the GPU is available in the container, you can use:
 ```bash
 docker run --rm --gpus all nvidia/cuda:12.2.0-devel-ubuntu22.04 nvidia-smi
 ```
-Dacă ai instalat driverele și `nvidia-docker2`, vei vedea detalii despre GPU.
+If you have the drivers and `nvidia-docker2` installed, you’ll see GPU details.
 
 ---
 
-### **Rulare locală (Manual)**
-Dacă nu dorești să folosești containere:
-1. Instalează dependențele cu `setup.sh`.
-2. Rulează pe rând:
+### **Manual Local Run**
+If you do not want to use containers:
+1. Install dependencies with `setup.sh`.
+2. Run them in sequence:
    ```bash
-   # 1) Pregătește datasetul
+   # 1) Prepare the dataset
    python src/dataset_prep.py
 
-   # 2) Antrenează modelul cu QLoRA
+   # 2) Train the model with QLoRA
    python src/train.py
 
-   # 3) Evaluează modelul
+   # 3) Evaluate the model
    python src/evaluate.py
 
-   # 4) Deploy cu FastAPI pe portul 8000
+   # 4) Deploy with FastAPI on port 8000
    uvicorn src.deploy:app --reload --host 0.0.0.0 --port 8000
    ```
 ---
 
-### **Personalizare pentru alte modele**
-Acest proiect poate fi adaptat pentru orice LLM, în loc de **DeepSeek-R1**.
+### **Customizing for Other Models**
+This project can be adapted to any LLM instead of **DeepSeek-R1**.
 
 1. **`config.yaml`**
    ```yaml
@@ -143,7 +143,7 @@ Acest proiect poate fi adaptat pentru orice LLM, în loc de **DeepSeek-R1**.
    pipe = pipeline("text-generation", model="models/your-model-name")
    ```
 
-#### **Modele compatibile**
+#### **Compatible Models**
 - **Meta LLaMA 2**
 - **Code LLaMA**
 - **Mistral-7B**
@@ -152,28 +152,28 @@ Acest proiect poate fi adaptat pentru orice LLM, în loc de **DeepSeek-R1**.
 etc.
 
 ### **FAQ**
-1. **Pot rula pe un RTX 4090 local?**
-   Da, QLoRA e perfect pentru 24GB VRAM. Performanța e mai mare pe A100/H100, dar 4090 e suficient.
+1. **Can I run it on a local RTX 4090?**
+   Yes, QLoRA is perfect for 24GB VRAM. Performance is higher on A100/H100, but 4090 is sufficient.
 
-2. **Ce seturi de date pot folosi?**
+2. **What datasets can I use?**
    - The Stack (Hugging Face)
-   - Repos GitHub (BigCode)
-   - Repos private Azure DevOps
+   - GitHub Repos (BigCode)
+   - Private Azure DevOps Repos
 
-3. **Cum fac deploy în producție?**
-   - Folosește Docker și FastAPI
-   - Poți muta imaginea Docker pe AWS, GCP, RunPod etc.
-   - Poți urca modelul fine-tunat pe Hugging Face cu:
+3. **How do I deploy to production?**
+   - Use Docker and FastAPI
+   - You can move the Docker image to AWS, GCP, RunPod, etc.
+   - You can upload the fine-tuned model to Hugging Face with:
      ```python
      model.push_to_hub("my-fine-tuned-deepseek")
      ```
 
-4. **De ce nu se vede codul local în dataset?**
-   În `src/dataset_prep.py`, fișierele locale sunt transformate în `Dataset` și concatenate cu `train`. Verifică log-urile să te asiguri că fișierele sunt citite corect.
+4. **Why can’t I see local code in the dataset?**
+   In `src/dataset_prep.py`, local files are transformed into a `Dataset` and concatenated with `train`. Check the logs to ensure that files are being read correctly.
 
 ---
 
-### **Resurse utile**
+### **Useful Resources**
 - [Hugging Face: The Stack](https://huggingface.co/datasets/bigcode/the-stack)
 - [DeepSeek AI](https://huggingface.co/deepseek-ai)
 - [Hugging Face: Fine-Tuning Guide](https://huggingface.co/docs/transformers/training)
@@ -183,5 +183,5 @@ etc.
 
 ---
 
-### **Contribuitori**
+### **Contributors**
 - [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Developer
