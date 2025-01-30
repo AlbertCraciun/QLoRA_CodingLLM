@@ -159,6 +159,3 @@ model.push_to_hub("my-fine-tuned-deepseek")
 
 ## **Contributors**
 - [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Developer
-
-## **License**
-This project is **open-source (MIT License).**
