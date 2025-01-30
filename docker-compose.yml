@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  qlora-training:
+    image: nvidia/cuda:12.2.0-devel-ubuntu22.04
+    container_name: qlora_training_container
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    command: bash -c "source venv/bin/activate && python src/train.py"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  qlora-api:
+    image: python:3.10
+    container_name: qlora_api_container
+    depends_on:
+      - qlora-training
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    ports:
+      - "8000:8000"
+    command: bash -c "source venv/bin/activate && uvicorn src.deploy:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  qlora_data:
+  qlora_models:
