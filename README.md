@@ -181,12 +181,7 @@ etc.
 - [Finetuning Code LLM (Hugging Face Cookbook)](https://huggingface.co/learn/cookbook/fine_tuning_code_llm_on_single_gpu)
 - [Code LLaMA](https://huggingface.co/codellama)
 
-<<<<<<< HEAD
-## **Contributors**
-- [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Developer
-=======
 ---
 
-### **Contributors**
+## **Contributors**
 - [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Developer
->>>>>>> developer
