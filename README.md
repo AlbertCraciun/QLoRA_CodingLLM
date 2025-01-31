@@ -184,4 +184,4 @@ etc.
 ---
 
 ## **Contributors**
-- [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Developer
+- [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Software Engineer
