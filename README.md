@@ -184,7 +184,7 @@ etc.
 ---
 
 #### **Kaggle**
-If you want to fine-tune a model using **Kaggle**, you can acces [this notebook](https://www.kaggle.com/code/albertcrciun/unsloth-llm-fine-tunning-untested)
+If you want to fine-tune a model using **Kaggle** adn HuggingFace, you can acces [this notebook](https://www.kaggle.com/code/albertcrciun/unsloth-llm-fine-tunning-untested)
 
 ---
 
