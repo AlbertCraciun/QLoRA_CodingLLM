@@ -183,5 +183,10 @@ etc.
 
 ---
 
+#### **Kaggle**
+If you want to fine-tune a model using **Kaggle**, you can acces [this notebook](https://www.kaggle.com/code/albertcrciun/unsloth-llm-fine-tunning-untested)
+
+---
+
 ## **Contributors**
 - [Albert Cristian Crăciun](https://www.linkedin.com/in/albertc1078/) - Software Engineer
